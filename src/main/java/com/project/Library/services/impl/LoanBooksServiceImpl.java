@@ -1,13 +1,19 @@
 package com.project.Library.services.impl;
 
 import com.project.Library.dtos.LoanBooksDTO;
-import com.project.Library.dtos.ResponseLoanBooks;
+import com.project.Library.dtos.ResponseLoanBooksDTO;
 import com.project.Library.entities.LoanBooks;
 import com.project.Library.repositories.LoanBooksRepository;
 import com.project.Library.services.LoanBooksService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -20,15 +26,56 @@ public class LoanBooksServiceImpl implements LoanBooksService {
     }
 
     @Override
-    public ResponseLoanBooks createNewLoan(LoanBooks loanBooks) {
+    public ResponseLoanBooksDTO createNewLoan(LoanBooks loanBooks) {
+        ResponseLoanBooksDTO responseLoanBooksDTO = new ResponseLoanBooksDTO();
+        LoanBooks loanBooksResponse = null;
+        LocalDate fechaActual = LocalDate.now();
+        List<LoanBooks> loanBooksResponseLoanBooksList = new ArrayList<>();
+        LocalDate fechaDevolucion = fechaActual;
 
-        ResponseLoanBooks responseLoanBooks = ResponseLoanBooks.builder().build();
-        LoanBooks loanBooksResponse = loanBooksRepository.save(loanBooks);
+        if(loanBooks.getUserType() == 1){
+            loanBooksResponseLoanBooksList =  loanBooksRepository.findByUserIdentification(loanBooks.getUserIdentification());
+        }
+        assert loanBooksResponseLoanBooksList != null;
+        if (loanBooksResponseLoanBooksList.isEmpty()){
+            fechaDevolucion = fechaDevolucion.plusDays(10);
 
-        responseLoanBooks.setId(loanBooksResponse.getIdLoan());
-        responseLoanBooks.setDueDay(loanBooksResponse.getMaximumDateDevolution());
+            while (fechaDevolucion.getDayOfWeek() == DayOfWeek.SATURDAY || fechaDevolucion.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                fechaDevolucion = fechaDevolucion.plusDays(1);
+            }
+            DateTimeFormatter format = DateTimeFormatter.ofPattern("dd/MM/yy");
+            String dateFormatDevolution = fechaDevolucion.format(format);
+            loanBooks.setMaximumDateDevolution(dateFormatDevolution);
+            loanBooksResponse = loanBooksRepository.save(loanBooks);
 
-        return responseLoanBooks;
+            responseLoanBooksDTO.setId(loanBooksResponse.getIdLoan());
+            responseLoanBooksDTO.setDueDay(loanBooksResponse.getMaximumDateDevolution());
+        }
+
+        if (loanBooks.getUserType() != 1){
+            switch (loanBooks.getUserType()) {
+                case 2:
+                    fechaDevolucion = fechaDevolucion.plusDays(8);
+                    break;
+                case 3:
+                    fechaDevolucion = fechaDevolucion.plusDays(7);
+                    break;
+                default:
+                    break;
+            }
+            while (fechaDevolucion.getDayOfWeek() == DayOfWeek.SATURDAY || fechaDevolucion.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                fechaDevolucion = fechaDevolucion.plusDays(1);
+            }
+            DateTimeFormatter format = DateTimeFormatter.ofPattern("dd/MM/yy");
+            String dateFormatDevolution = fechaDevolucion.format(format);
+            loanBooks.setMaximumDateDevolution(dateFormatDevolution);
+            loanBooksResponse = loanBooksRepository.save(loanBooks);
+
+            responseLoanBooksDTO.setId(loanBooksResponse.getIdLoan());
+            responseLoanBooksDTO.setDueDay(loanBooksResponse.getMaximumDateDevolution());
+        }
+
+        return responseLoanBooksDTO;
     }
 
     @Override
