@@ -10,7 +10,9 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @Builder
-public class ResponseLoanBooks {
+public class ResponseLoanBooksDTO {
+    public ResponseLoanBooksDTO() {
+    }
 
     private Integer id;
     private String dueDay;

@@ -22,7 +22,7 @@ public class LoanBooksController {
     }
 
     @PostMapping("/prestamo")
-    public ResponseEntity<?> crearPrestamo(@RequestBody LoanBooks loanBooks) {
+    public ResponseEntity<?> createLoan(@RequestBody LoanBooks loanBooks) {
         ResponseLoanBooksDTO responseLoanBooksDTO = loanBooksService.createNewLoan(loanBooks);
         if (responseLoanBooksDTO.getId() == null){
             return new ResponseEntity<>("\"mensaje\" : \"El usuario con identificación: " + loanBooks.getUserIdentification() +
